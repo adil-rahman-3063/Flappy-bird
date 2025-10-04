@@ -1,6 +1,9 @@
 # Sayip-bird-python
-A basic Flappy Bird game made in Python
 A basic Flappy Bird game made in Python.
+
+Please read the "Content warning" section below before visiting or playing the live demo.
+
+Live demo: https://adil-rahman-3063.github.io/Sayip-bird/
 
 Credits
 - Original project / assets used by this repo were taken from: https://github.com/zhaolingzhi/FlapPyBird-master
