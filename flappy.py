@@ -1,3 +1,5 @@
+import os
+import sys
 import pygame, random, time
 from pygame.locals import *
 
@@ -18,8 +20,6 @@ PIPE_GAP = 150
 
 wing = 'assets/audio/wing.wav'
 hit = 'assets/audio/hit.wav'
-
-pygame.mixer.init()
 
 
 class Bird(pygame.sprite.Sprite):
@@ -112,12 +112,65 @@ def get_random_pipes(xpos):
 
 
 pygame.init()
+# Initialize the mixer after pygame.init() for better compatibility
+try:
+    pygame.mixer.init()
+except Exception:
+    # Mixer may fail on some systems; continue without sound
+    print('Warning: pygame.mixer failed to initialize. Audio will be disabled.')
+
 screen = pygame.display.set_mode((SCREEN_WIDHT, SCREEN_HEIGHT))
-pygame.display.set_caption('Flappy Bird')
+pygame.display.set_caption('Sayip Bird')
+
+# Basic asset checks to help surface missing file problems early
+missing = []
+assets_to_check = [
+    'assets/sprites/background-day.png',
+    'assets/sprites/message.png',
+    'assets/sprites/bluebird-upflap.png',
+    'assets/sprites/bluebird-midflap.png',
+    'assets/sprites/bluebird-downflap.png',
+    'assets/sprites/base.png',
+    'assets/sprites/pipe-green.png',
+    wing,
+    hit,
+]
+for p in assets_to_check:
+    if not os.path.exists(p):
+        missing.append(p)
+if missing:
+    print('Error: the following asset files are missing:')
+    for m in missing:
+        print('  -', m)
+    print('\nMake sure you run the script from the project root where the `assets/` folder is located.')
+    sys.exit(1)
 
 BACKGROUND = pygame.image.load('assets/sprites/background-day.png')
 BACKGROUND = pygame.transform.scale(BACKGROUND, (SCREEN_WIDHT, SCREEN_HEIGHT))
 BEGIN_IMAGE = pygame.image.load('assets/sprites/message.png').convert_alpha()
+# Resize the start message so it doesn't touch the edges.
+# Keep aspect ratio and limit to a fraction of the screen.
+try:
+    max_w = int(SCREEN_WIDHT * 0.5)   # at most 50% of screen width
+    max_h = int(SCREEN_HEIGHT * 0.12) # at most 12% of screen height
+    iw, ih = BEGIN_IMAGE.get_width(), BEGIN_IMAGE.get_height()
+    scale = min(1.0, max_w / iw, max_h / ih)
+    new_w = max(1, int(iw * scale))
+    new_h = max(1, int(ih * scale))
+    BEGIN_IMAGE = pygame.transform.scale(BEGIN_IMAGE, (new_w, new_h))
+except Exception:
+    # if scaling fails, keep original
+    pass
+
+# Compute the Y position to place the message (centered-ish, not touching edges)
+BEGIN_POS_Y = int(SCREEN_HEIGHT * 0.12)
+
+# Initialize font for on-screen instructions (helpful for debugging blank windows)
+try:
+    pygame.font.init()
+    FONT = pygame.font.SysFont(None, 22)
+except Exception:
+    FONT = None
 
 bird_group = pygame.sprite.Group()
 bird = Bird()
@@ -148,15 +201,32 @@ while begin:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
+            sys.exit()
+        # Allow keyboard or mouse click to start
         if event.type == KEYDOWN:
             if event.key == K_SPACE or event.key == K_UP:
                 bird.bump()
-                pygame.mixer.music.load(wing)
-                pygame.mixer.music.play()
+                try:
+                    pygame.mixer.music.load(wing)
+                    pygame.mixer.music.play()
+                except Exception:
+                    pass
+                begin = False
+        if event.type == MOUSEBUTTONDOWN:
+            # left click to start
+            if event.button == 1:
+                bird.bump()
+                try:
+                    pygame.mixer.music.load(wing)
+                    pygame.mixer.music.play()
+                except Exception:
+                    pass
                 begin = False
 
     screen.blit(BACKGROUND, (0, 0))
-    screen.blit(BEGIN_IMAGE, (120, 150))
+    # center the begin image horizontally for different window sizes
+    begin_x = (SCREEN_WIDHT - BEGIN_IMAGE.get_width()) // 2
+    screen.blit(BEGIN_IMAGE, (begin_x, BEGIN_POS_Y))
 
     if is_off_screen(ground_group.sprites()[0]):
         ground_group.remove(ground_group.sprites()[0])
@@ -168,6 +238,16 @@ while begin:
     ground_group.update()
 
     bird_group.draw(screen)
+    # draw a visible rectangle around the bird to make it easier to see
+    try:
+        pygame.draw.rect(screen, (255, 0, 0), bird.rect, 2)
+    except Exception:
+        pass
+
+    # draw an instruction overlay
+    if FONT:
+        instr = FONT.render('Press Space/Up or Left-click to start', True, (255, 255, 255))
+        screen.blit(instr, (10, 10))
     ground_group.draw(screen)
 
     pygame.display.update()
@@ -180,11 +260,24 @@ while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
+            sys.exit()
+        # Allow keyboard or mouse click for bump
         if event.type == KEYDOWN:
             if event.key == K_SPACE or event.key == K_UP:
                 bird.bump()
-                pygame.mixer.music.load(wing)
-                pygame.mixer.music.play()
+                try:
+                    pygame.mixer.music.load(wing)
+                    pygame.mixer.music.play()
+                except Exception:
+                    pass
+        if event.type == MOUSEBUTTONDOWN:
+            if event.button == 1:
+                bird.bump()
+                try:
+                    pygame.mixer.music.load(wing)
+                    pygame.mixer.music.play()
+                except Exception:
+                    pass
 
     screen.blit(BACKGROUND, (0, 0))
 
@@ -210,6 +303,16 @@ while True:
     bird_group.draw(screen)
     pipe_group.draw(screen)
     ground_group.draw(screen)
+    # draw a visible rectangle around the bird so it's easy to spot
+    try:
+        pygame.draw.rect(screen, (255, 0, 0), bird.rect, 2)
+    except Exception:
+        pass
+
+    # show a small instruction overlay
+    if FONT:
+        instr = FONT.render('Press Space/Up or Left-click to flap', True, (255, 255, 255))
+        screen.blit(instr, (10, 10))
 
     pygame.display.update()
 
