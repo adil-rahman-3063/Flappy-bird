@@ -6,6 +6,13 @@ Credits
 - Original project / assets used by this repo were taken from: https://github.com/zhaolingzhi/FlapPyBird-master
 - This fork uses the layout and assets from: https://github.com/LeonMarqs/Flappy-bird-python — thanks to the original authors for the artwork and base code.
 
+Content warning
+
+- This project is provided for entertainment and educational purposes only. It is not intended for children or for use in settings where content must be child-appropriate.
+- The game and this repository may contain or expose users to foul language, crude humor, or other material that some audiences may find objectionable.
+- By using or distributing this software you acknowledge that it is provided "as-is" for fun and demonstration, and that appropriate supervision or content filtering should be used when minors are present.
+
+
 This fork (changes in this copy)
 - Adjusted audio handling and added multiple audio candidates (you can change flap / gameover sounds).
 - Improved input handling (mouse clicks + keyboard) and added an on-screen instruction overlay.
@@ -14,7 +21,6 @@ This fork (changes in this copy)
 
 Current state
 - See `image.png` for the intended layout and visuals.
-
 Dependencies
 - Python 3.8+ and `pygame` for the native version.
 
