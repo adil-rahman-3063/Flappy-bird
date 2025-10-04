@@ -1,4 +1,4 @@
-# Flappy-bird-python
+# Sayip-bird-python
 A basic Flappy Bird game made in Python
 A basic Flappy Bird game made in Python.
 
